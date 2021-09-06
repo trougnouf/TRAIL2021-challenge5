@@ -14,6 +14,7 @@ from datetime import datetime
 import random
 import sys
 import datetime
+import env
 
 sys.path.append("..")
 from emotions.tools import prep_raf_dataset
@@ -21,20 +22,18 @@ from emotions.tools import prep_raf_dataset
 random.seed(42)
 
 MODELS_DPATH = os.path.join("..", "models", "emotions")
-RAF_DATA_DPATH = os.path.join("..", "datasets", "raf_basic")
-PATIENCE=10
-LR_DECAY=0.5
-N_EPOCHS=200
+DS_NAME = "raf_basic"
+PATIENCE = 10
+LR_DECAY = 0.5
+N_EPOCHS = 200
 
-if not os.path.isdir(RAF_DATA_DPATH):
-    print(
-        "RAF_DATA_DPATH ({RAF_DATA_DPATH}) not found; building with tools/prep_raf_dataset.py"
-    )
+if not os.path.isdir(os.path.join(env.DS_ROOT, 'train', DS_NAME)):
+    print("Dataset not found; building with tools/prep_raf_dataset.py")
     prep_raf_dataset.make_raf_ImageFolder_struct()
 
 
 def get_raf_dataloaders(
-    image_size=(224, 224), batch_size=32, data_dpath=RAF_DATA_DPATH
+    image_size=(224, 224), batch_size=32, ds_root=env.DS_ROOT, ds_name=DS_NAME
 ):
     """
     Load a RAF dataset from data_dpath containing train_* and test_* images.
@@ -42,11 +41,11 @@ def get_raf_dataloaders(
     Return train, test, val (10% of train) dataloaders.
     """
     train_set = ImageFolder(
-        root=os.path.join(data_dpath, "train"),
+        root=os.path.join(ds_root, "train", ds_name),
         transform=Compose([Resize(image_size), ToTensor()]),
     )
     test_set = ImageFolder(
-        root=os.path.join(data_dpath, "test"),
+        root=os.path.join(ds_root, "test", ds_name),
         transform=Compose([Resize(image_size), ToTensor()]),
     )
 
@@ -76,6 +75,7 @@ def train(
             for param_group in optimizer.param_groups:
                 param_group["lr"] *= lr_decay
                 print('train: reduced lr to param_group["lr"]')
+        writer.add_scalar("lr", optimizer.param_groups[0]["lr"], epoch)
         running_loss = 0.0
         evaluation = []
         for i, data in enumerate(dataset):
@@ -169,5 +169,5 @@ if __name__ == "__main__":
         val_dataset=test_set,
         save_dpath=save_dpath,
         patience=PATIENCE,
-        lr_decay=LR_DECAY
+        lr_decay=LR_DECAY,
     )

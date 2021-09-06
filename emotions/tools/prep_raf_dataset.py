@@ -3,6 +3,7 @@
 import os
 import shutil
 import pathlib
+import env
 
 ORIG_DATADIR = os.path.join(
     pathlib.Path.home(),
@@ -15,7 +16,7 @@ ORIG_DATADIR = os.path.join(
     "Image",
     "aligned",
 )
-NEW_DATADIR = os.path.join("..", "datasets", "raf_basic")
+DS_NAME = "raf_basic"
 LABELS_FPATH = os.path.join(
     pathlib.Path.home(),
     ".cache",
@@ -33,18 +34,22 @@ def make_raf_ImageFolder_struct():
     """
     Copy RAF dataset from ORIG_DATADIR to ImageFolder-compatible structure.
 
-    Results in NEW_DATADIR/[train or test]/[class_n]/[fn]
+    Results in DS_ROOT/[train or test]/kdef/[class_n]/[fn]
     """
     for label in range(1, 8):
-        os.makedirs(os.path.join(NEW_DATADIR, "train", str(label)), exist_ok=True)
-        os.makedirs(os.path.join(NEW_DATADIR, "test", str(label)), exist_ok=True)
+        os.makedirs(
+            os.path.join(env.DS_ROOT, "train", DS_NAME, str(label)), exist_ok=True
+        )
+        os.makedirs(
+            os.path.join(env.DS_ROOT, "test", DS_NAME, str(label)), exist_ok=True
+        )
     with open(LABELS_FPATH, "r") as fp:
         for line in fp:
             fn, label = line[:-1].split(" ")
             fn_actual = fn[:-4] + "_aligned" + ".jpg"
             train_or_test = fn.split("_")[0]
             src = os.path.join(ORIG_DATADIR, fn_actual)
-            dest = os.path.join(NEW_DATADIR, train_or_test, label, fn_actual)
+            dest = os.path.join(env.DS_ROOT, train_or_test, DS_NAME, label, fn_actual)
             shutil.copyfile(src, dest)
             print(f"cp {src} {dest}")
 

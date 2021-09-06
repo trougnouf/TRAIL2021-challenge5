@@ -13,12 +13,14 @@ from pl_bolts.models.self_supervised import SwAV
 from datetime import datetime
 import random
 import sys
+import datetime
 
 sys.path.append("..")
 from emotions.tools import prep_raf_dataset
 
 random.seed(42)
 
+MODELS_DPATH = os.path.join("..", "models")
 RAF_DATA_DPATH = os.path.join("..", "datasets", "raf_basic")
 if not os.path.isdir(RAF_DATA_DPATH):
     print(
@@ -35,7 +37,6 @@ def get_raf_dataloaders(
 
     Return train, test, val (10% of train) dataloaders.
     """
-
     train_set = ImageFolder(
         root=os.path.join(data_dpath, "train"),
         transform=Compose([Resize(image_size), ToTensor()]),
@@ -50,9 +51,14 @@ def get_raf_dataloaders(
     return train_loader, test_loader
 
 
-def train(dataset, model, loss_function, optimizer, device, n_epochs, val_dataset):
+def train(
+    dataset, model, loss_function, optimizer, device, n_epochs, val_dataset, save_dpath
+):
+    """Training loop."""
     print("Started training")
-    writer = SummaryWriter("runs/resnet50_Swav_" + str(datetime.now()))
+    writer = SummaryWriter(
+        os.path.join(save_dpath, 'tensorboard')
+    )
     for epoch in range(n_epochs):  # loop over the dataset multiple times
         running_loss = 0.0
         evaluation = []
@@ -107,27 +113,32 @@ def train(dataset, model, loss_function, optimizer, device, n_epochs, val_datase
 
         validation_loss = validation_loss / len(val_dataset)
         accuracy = num_correct / num_items
-        torch.save(model.state_dict(), "weight/resnet50_swav_" + str(epoch))
+        torch.save(
+            model.state_dict(), os.path.join(save_dpath, f"resnet50_swav_{epoch}.pth")
+        )
         print(
             "[Epoch %d / %d],  Validation loss: %.3f"
             % (epoch + 1, n_epochs, validation_loss)
         )
         writer.add_scalar("Running Loss/val", validation_loss, epoch)
         writer.add_scalar("Accuracy/val", accuracy, epoch)
-    witer.flush()
+    writer.flush()
     writer.close()
     print("Finished Training")
 
 
 if __name__ == "__main__":
-    num_classes = 7
+    expname = datetime.datetime.now().replace(microsecond=0).isoformat()
+    save_dpath = os.path.join(MODELS_DPATH, expname)
+    os.makedirs(save_dpath)
+    NUM_CLASSES = 7
     train_set, test_set = get_raf_dataloaders()
     device = torch.device(
         "cuda" if torch.cuda.is_available() else "cpu"
     )  # TODO parametrable GPU number
-    weight_path = "https://pl-bolts-weights.s3.us-east-2.amazonaws.com/swav/swav_imagenet/swav_imagenet.pth.tar"
-    model = SwAV.load_from_checkpoint(weight_path, strict=True).model
-    model.prototypes = nn.Linear(128, num_classes)
+    WEIGHT_PATH = "https://pl-bolts-weights.s3.us-east-2.amazonaws.com/swav/swav_imagenet/swav_imagenet.pth.tar"
+    model = SwAV.load_from_checkpoint(WEIGHT_PATH, strict=True).model
+    model.prototypes = nn.Linear(128, NUM_CLASSES)
     model = model.to(device)
 
     loss_function = nn.CrossEntropyLoss()
@@ -140,4 +151,5 @@ if __name__ == "__main__":
         device=device,
         n_epochs=25,
         val_dataset=test_set,
+        save_dpath=save_dpath,
     )

@@ -20,8 +20,12 @@ from emotions.tools import prep_raf_dataset
 
 random.seed(42)
 
-MODELS_DPATH = os.path.join("..", "models")
+MODELS_DPATH = os.path.join("..", "models", "emotions")
 RAF_DATA_DPATH = os.path.join("..", "datasets", "raf_basic")
+PATIENCE=10
+LR_DECAY=0.5
+N_EPOCHS=200
+
 if not os.path.isdir(RAF_DATA_DPATH):
     print(
         "RAF_DATA_DPATH ({RAF_DATA_DPATH}) not found; building with tools/prep_raf_dataset.py"
@@ -52,14 +56,26 @@ def get_raf_dataloaders(
 
 
 def train(
-    dataset, model, loss_function, optimizer, device, n_epochs, val_dataset, save_dpath
+    dataset,
+    model,
+    loss_function,
+    optimizer,
+    device,
+    n_epochs,
+    val_dataset,
+    save_dpath,
+    patience,
+    lr_decay,
 ):
     """Training loop."""
     print("Started training")
-    writer = SummaryWriter(
-        os.path.join(save_dpath, 'tensorboard')
-    )
+    writer = SummaryWriter(os.path.join(save_dpath, "tensorboard"))
     for epoch in range(n_epochs):  # loop over the dataset multiple times
+        # simple lr decay every patience epochs
+        if epoch % patience == 0:
+            for param_group in optimizer.param_groups:
+                param_group["lr"] *= lr_decay
+                print('train: reduced lr to param_group["lr"]')
         running_loss = 0.0
         evaluation = []
         for i, data in enumerate(dataset):
@@ -104,7 +120,7 @@ def train(
             inputs = inputs.to(device)
             labels = labels.to(device)
 
-            # forward + backward + optimize
+            # forward
             outputs = model(inputs)[1]
             loss = loss_function(outputs, labels)
             validation_loss += loss.item()
@@ -149,7 +165,9 @@ if __name__ == "__main__":
         loss_function=loss_function,
         optimizer=optimizer,
         device=device,
-        n_epochs=25,
+        n_epochs=N_EPOCHS,
         val_dataset=test_set,
         save_dpath=save_dpath,
+        patience=PATIENCE,
+        lr_decay=LR_DECAY
     )

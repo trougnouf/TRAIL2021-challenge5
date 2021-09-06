@@ -1,3 +1,4 @@
+# Used in GAIF supervised training w/ RAF dataset
 config_version: 1.0
 training:
   trainer: mmf # lightning_gaif

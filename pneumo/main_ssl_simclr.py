@@ -93,7 +93,7 @@ def train(dataset, model, loss_function, optimizer, device, n_epochs, val_datase
         print('[Epoch %d / %d],  Validation loss: %.3f' % (epoch + 1, n_epochs, validation_loss))
         writer.add_scalar("Running Loss/val", validation_loss, epoch)
         writer.add_scalar("Accuracy/val", accuracy, epoch)    
-    witer.flush()
+    writer.flush()
     writer.close()
     print('Finished Training')
 

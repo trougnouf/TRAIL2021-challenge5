@@ -1,0 +1,9 @@
+train_ds_names:
+  - raf_basic
+  - kdef
+test_ds_names:
+  - raf_basic
+patience: 10
+lr_decay: 0.5
+n_epochs: 200
+device: 0

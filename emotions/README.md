@@ -1,2 +1,2 @@
 pip requirements:
-pip install lightning-bolts
+pip install lightning-bolts ConfigArgParse PyYAML

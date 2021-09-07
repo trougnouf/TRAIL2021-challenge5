@@ -49,13 +49,13 @@ def train_supervised(model, device, optimizer, loss_function, n_epochs, train_se
                 history.append((log_step, running_loss, accuracy))
                 print('[%d, %5d/%d] loss: %.3f\t accuracy: %.3f' %
                       (epoch + 1, i + 1, len(train_set), running_loss, accuracy))
-                writer.add_scalars("Loss/train", running_loss, log_step)
-                writer.add_scalars("Accuracy/train", accuracy, log_step)
+                writer.add_scalars("Loss", {'Train': running_loss}, log_step)
+                writer.add_scalars("Accuracy", {'Train' :accuracy}, log_step)
                 evaluation = []
                 running_loss = 0.0
         val_loss, val_accuracy = _validate(test_set, model, device, loss_function)
-        writer.add_scalars("Loss/val", val_loss, epoch)
-        writer.add_scalars("Accuracy/val", val_accuracy, epoch)
+        writer.add_scalars("Loss", {'Eval': val_loss}, epoch)
+        writer.add_scalars("Accuracy", {'Eval': val_accuracy}, epoch)
     # writer.flush()
     # writer.close()
     print('Finished Training')

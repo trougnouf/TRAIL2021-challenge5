@@ -16,7 +16,7 @@ def _load_pneumonia(image_size=(224, 224), batch_size=64):
         transform=Compose([
             Resize(256),
             CenterCrop(224),
-            Augmenter(ra=False, prob=0.5),
+            Augmenter(ra=True, prob=0.5),
             ToTensor(),
             Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
@@ -41,7 +41,7 @@ def _load_pneumonia(image_size=(224, 224), batch_size=64):
     #         Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     #     ])
     # )
-    train = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=6, pin_memory=True)
+    train = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=6)
     test = DataLoader(test_set, batch_size=batch_size, shuffle=True, num_workers=6)
     # val = DataLoader(val_set, batch_size=batch_size, shuffle=True)
     return train, test#, val

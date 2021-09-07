@@ -14,6 +14,7 @@ class Flatten(nn.Module):
     def forward(self, input):
         return input[0]
 
+
 def load_pneumonia(image_size=(224, 224), batch_size=32):
     train_set = ImageFolder(
         root="chest_xray/train",
@@ -71,7 +72,7 @@ def train(dataset, model, loss_function, optimizer, device, n_epochs, val_datase
                 writer.add_scalar("Accuracy/train", np.mean(evaluation)/32, epoch * len(dataset) + i)
                 evaluation = []
                 running_loss = 0.0
-        
+
         num_correct = 0
         num_items = 0
         validation_loss = 0.0
@@ -92,7 +93,7 @@ def train(dataset, model, loss_function, optimizer, device, n_epochs, val_datase
         torch.save(model.state_dict(), 'weight/resnet50_simclr_'+str(epoch))
         print('[Epoch %d / %d],  Validation loss: %.3f' % (epoch + 1, n_epochs, validation_loss))
         writer.add_scalar("Running Loss/val", validation_loss, epoch)
-        writer.add_scalar("Accuracy/val", accuracy, epoch)    
+        writer.add_scalar("Accuracy/val", accuracy, epoch)
     writer.flush()
     writer.close()
     print('Finished Training')
@@ -107,8 +108,9 @@ if __name__ == "__main__":
     model = nn.Sequential(
         simclr.encoder,
         Flatten(),
-        nn.Linear(2048,2))
+        nn.Linear(2048, 2)
+    )
     model = model.to(device)
     loss_function = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters())
-    train(train_set, model, loss_function, optimizer, device, 25, val_set) 
+    train(train_set, model, loss_function, optimizer, device, 25, val_set)

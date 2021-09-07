@@ -1,1 +1,1 @@
-from .training import train
+from .training import train, train_supervised

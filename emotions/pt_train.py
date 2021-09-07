@@ -64,6 +64,11 @@ def parse_arguments():
         "--device",
         help="Device number used if cuda is detected",
     )
+    parser.add_argument(
+        "--no_pretrain",
+        action="store_true",
+        help="Train from scratch",
+    )
     return parser.parse_args()
 
 
@@ -75,12 +80,12 @@ def get_dataloaders(
     ds_root=env.DS_ROOT,
 ):
     """
-    Load a RAF dataset from data_dpath containing train_* and test_* images.
+    Get train and test data loaders.
 
-    Return train, test, val (10% of train) dataloaders.
+    Based on directories in ../datasets/[train or test].
     """
-    train_sets = list()
-    test_sets = list()
+    train_sets = []
+    test_sets = []
     for ds_name in train_ds_names:
         if not os.path.isdir(os.path.join(env.DS_ROOT, "train", ds_name)):
             print(f"Dataset not found; building with {DS_BUILDERS[ds_name]}")
@@ -117,6 +122,14 @@ def get_dataloaders(
         test_combisets, batch_size=batch_size, shuffle=True
     )
     return train_loader, test_loader
+
+
+def weights_init(m):
+    if isinstance(m, nn.Conv2d):
+        torch.nn.init.xavier_uniform(m.weight.data)
+    if isinstance(m, nn.Linear):
+        torch.nn.init.xavier_uniform(m.weight)
+        m.bias.data.fill_(0.01)
 
 
 def train(
@@ -221,13 +234,15 @@ if __name__ == "__main__":
 
     NUM_CLASSES = 7
     train_set, test_set = get_dataloaders(args.train_ds_names, args.test_ds_names)
-    device = torch.device(
-        f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"
-    )  # TODO parametrable GPU number
+    device = torch.device(f"cuda:{args.device}" if torch.cuda.is_available() else "cpu")
     WEIGHT_PATH = "https://pl-bolts-weights.s3.us-east-2.amazonaws.com/swav/swav_imagenet/swav_imagenet.pth.tar"
     model = SwAV.load_from_checkpoint(WEIGHT_PATH, strict=True).model
     model.prototypes = nn.Linear(128, NUM_CLASSES)
     model = model.to(device)
+
+    if args.no_pretrain:
+        print("Reseting weights.")
+        model.apply(weights_init)
 
     loss_function = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters())

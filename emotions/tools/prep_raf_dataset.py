@@ -3,7 +3,10 @@
 import os
 import shutil
 import pathlib
-import env
+import sys
+
+sys.path.append("..")
+from emotions import pt_common
 
 ORIG_DATADIR = os.path.join(
     pathlib.Path.home(),
@@ -38,10 +41,10 @@ def make_raf_ImageFolder_struct():
     """
     for label in range(1, 8):
         os.makedirs(
-            os.path.join(env.DS_ROOT, "train", DS_NAME, str(label)), exist_ok=True
+            os.path.join(pt_common.DS_ROOT, "train", DS_NAME, str(label)), exist_ok=True
         )
         os.makedirs(
-            os.path.join(env.DS_ROOT, "test", DS_NAME, str(label)), exist_ok=True
+            os.path.join(pt_common.DS_ROOT, "test", DS_NAME, str(label)), exist_ok=True
         )
     with open(LABELS_FPATH, "r") as fp:
         for line in fp:
@@ -49,7 +52,9 @@ def make_raf_ImageFolder_struct():
             fn_actual = fn[:-4] + "_aligned" + ".jpg"
             train_or_test = fn.split("_")[0]
             src = os.path.join(ORIG_DATADIR, fn_actual)
-            dest = os.path.join(env.DS_ROOT, train_or_test, DS_NAME, label, fn_actual)
+            dest = os.path.join(
+                pt_common.DS_ROOT, train_or_test, DS_NAME, label, fn_actual
+            )
             shutil.copyfile(src, dest)
             print(f"cp {src} {dest}")
 

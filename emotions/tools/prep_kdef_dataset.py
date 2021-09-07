@@ -6,9 +6,9 @@ import pathlib
 import sys
 
 sys.path.append("..")
-from emotions import env
+from emotions import pt_common
 
-ORIG_DATA_DPATH = os.path.join(env.DS_ROOT, "KDEF_and_AKDEF", "KDEF")
+ORIG_DATA_DPATH = os.path.join(pt_common.DS_ROOT, "KDEF_and_AKDEF", "KDEF")
 DS_NAME = "kdef"
 LABELS_LUT = {"AF": 2, "AN": 6, "DI": 3, "HA": 4, "NE": 7, "SA": 5, "SU": 1}
 
@@ -21,7 +21,7 @@ def make_KDEF_ImageFolder_struct():
 
     Results in DS_ROOT/[train or test]/kdef/[class_$n]/[fn]
     """
-    dest_dpath = os.path.join(env.DS_ROOT, "train", DS_NAME)
+    dest_dpath = os.path.join(pt_common.DS_ROOT, "train", DS_NAME)
     for label in range(1, 8):
         os.makedirs(os.path.join(dest_dpath, str(label)), exist_ok=True)
     for aset in os.listdir(ORIG_DATA_DPATH):

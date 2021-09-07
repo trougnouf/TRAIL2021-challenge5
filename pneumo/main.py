@@ -4,6 +4,7 @@ import argparse
 import datasets
 import training
 import models
+import sys
 
 
 def parse_args():
@@ -28,7 +29,7 @@ if __name__ == "__main__":
     nclasses = 2 if args.downstream == "pneumonia" else 15
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model, optimizer, loss_function = models.load(nclasses, use_pretrained_weights, device)
-
+    
     # Pretraining
     if args.pretraining != "none" and args.pretext != "imagenet":
         train, test, val = datasets.load(args.pretext)
@@ -36,6 +37,9 @@ if __name__ == "__main__":
                        loss_function, args.nepochs, train, test, args.metrics)
 
     # Downstream task
-    train, test, val = datasets.load(args.downstream)
+    print('Creating datasets')
+    train, test = datasets.load(args.downstream)
+    print('Dataset loaded')
+    # sys.exit()
     history = training.train("supervised", model, device, optimizer, loss_function,
                              args.nepochs, train, test, args.metrics)

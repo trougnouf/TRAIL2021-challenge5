@@ -1,5 +1,8 @@
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
+import sys
+import datetime
+import os
 
 
 def train(training_method, model, device, optimizer, loss_function, n_epochs, train_set, test_set, metrics):
@@ -15,7 +18,9 @@ def train(training_method, model, device, optimizer, loss_function, n_epochs, tr
 
 def train_supervised(model, device, optimizer, loss_function, n_epochs, train_set, test_set, metrics):
     print("Started training")
-    writer = SummaryWriter()
+    save_log = os.path.join('/scratch/users/rvandeghen/trail/pretrained_sup_imagenet_ds_xray', 'tensorboard', datetime.datetime.now().strftime("%m%d-%H%M%S"))
+    print('Saving tensorboard at {}'.format(save_log))
+    writer = SummaryWriter(save_log)
     history = []
     for epoch in range(n_epochs):  # loop over the dataset multiple times
         running_loss = 0.0
@@ -35,7 +40,7 @@ def train_supervised(model, device, optimizer, loss_function, n_epochs, train_se
             # print statistics
             evaluation.append((outputs.argmax(1) == labels).cpu().sum().item() / len(outputs))
             running_loss += loss.item()
-            if i % 10 == 9:
+            if True: #i % 10 == 9:
                 running_loss = running_loss / 10
                 accuracy = np.mean(evaluation)
                 log_step = epoch * len(train_set) + i
@@ -49,8 +54,8 @@ def train_supervised(model, device, optimizer, loss_function, n_epochs, train_se
         val_loss, val_accuracy = _validate(test_set, model, device, loss_function)
         writer.add_scalar("Loss/val", val_loss, epoch)
         writer.add_scalar("Accuracy/val", val_accuracy, epoch)
-    writer.flush()
-    writer.close()
+    # writer.flush()
+    # writer.close()
     print('Finished Training')
     return history
 

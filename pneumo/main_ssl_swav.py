@@ -71,7 +71,6 @@ def train(dataset, model, loss_function, optimizer, device, n_epochs, val_datase
         evaluation = []
         running_loss = 0.0
 
-
         num_correct = 0
         num_items = 0
         for _, data in enumerate(val_dataset):
@@ -91,8 +90,8 @@ def train(dataset, model, loss_function, optimizer, device, n_epochs, val_datase
         torch.save(model.state_dict(), 'weight/resnet50_swav_'+str(epoch))
         print('[Epoch %d / %d],  Validation loss: %.3f' % (epoch + 1, n_epochs, validation_loss))
         writer.add_scalar("Running Loss/val", validation_loss, epoch)
-        writer.add_scalar("Accuracy/val", accuracy, epoch)      
-    witer.flush()
+        writer.add_scalar("Accuracy/val", accuracy, epoch)
+    writer.flush()
     writer.close()
     print('Finished Training')
 
@@ -103,9 +102,9 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     weight_path = 'https://pl-bolts-weights.s3.us-east-2.amazonaws.com/swav/swav_imagenet/swav_imagenet.pth.tar'
     model = SwAV.load_from_checkpoint(weight_path, strict=True).model
-    model.prototypes=nn.Linear(128, num_classes)
+    model.prototypes = nn.Linear(128, num_classes)
     model = model.to(device)
 
     loss_function = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters())
-    train(train_set, model, loss_function, optimizer, device, 25, val_set) 
+    train(train_set, model, loss_function, optimizer, device, 25, val_set)

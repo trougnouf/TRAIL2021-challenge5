@@ -14,21 +14,38 @@ def parse_args():
     parser.add_argument("--nepochs", type=int, default=20)
     parser.add_argument("--metrics", choices=["accuracy", "precision", "recall", "confusion_matrix"],
                         nargs="*", default=["accuracy", "precision", "recall", "confusion_matrix"])
-    return parser.parse_args()
+    parser.add_argument("--log_dir", default=None)
+    parser.add_argument("--checkpoint_dir", default=None)
+    args = parser.parse_args()
+    experiment_summary(args)
+    return args
 
 
 def experiment_summary(args):
-    pass
+    print(f"""
+    ##########################################################
+    #                   Experiment summary                   #
+    #--------------------------------------------------------#
+    # Pretraining: {args.pretraining}
+    # Pretext task: {args.pretext}
+    #--------------------------------------------------------#
+    # Downstream task: {args.downstream}
+    # Number of epochs: {args.nepochs}
+    #--------------------------------------------------------#
+    # Log directory: {args.log_dir}
+    # Checkpoint directory: {args.checkpoint_dir}
+    # Metrics: {args.metrics}
+    ##########################################################
+    """)
 
 
 if __name__ == "__main__":
     args = parse_args()
 
-    use_pretrained_weights = (args.pretraining == "supervised" and args.pretext == "imagenet")
     nclasses = 2 if args.downstream == "pneumonia" else 15
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model, optimizer, loss_function = models.load(nclasses, use_pretrained_weights, device)
-
+    model, optimizer, loss_function = models.load(
+        nclasses, device, args.pretext, args.pretraining)
     # Pretraining
     if args.pretraining != "none" and args.pretext != "imagenet":
         train, test, val = datasets.load(args.pretext)
@@ -36,6 +53,8 @@ if __name__ == "__main__":
                        loss_function, args.nepochs, train, test, args.metrics)
 
     # Downstream task
-    train, test, val = datasets.load(args.downstream)
+    print('Creating datasets')
+    train, test = datasets.load(args.downstream)
+    print('Dataset loaded')
     history = training.train("supervised", model, device, optimizer, loss_function,
                              args.nepochs, train, test, args.metrics)

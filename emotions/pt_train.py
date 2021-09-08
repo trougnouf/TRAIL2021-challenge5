@@ -54,7 +54,7 @@ def parse_arguments():
         "--loss_weights",
         nargs="*",
         type=float,
-        help="Classes weights used in the training loss.",
+        help="(space-separated) Classes weights used in the training loss. Set to 0 for uniform weights.",
     )
     return parser.parse_args()
 ​
@@ -179,11 +179,12 @@ if __name__ == "__main__":
     if args.no_pretrain:
         print("Reseting weights.")
         model.apply(weights_init)
-    if args.lossf == "CrossEntropy" and args.loss_weights:
+    if (args.lossf == "CrossEntropy" and len(args.loss_weights) == pt_commons.NUM_CLASSES):
         loss_function = nn.CrossEntropyLoss(
             weight=torch.tensor(args.loss_weights).to(device)
         )
     elif args.lossf == "CrossEntropy":
+        print('pt_train: using CrossEntropyLoss with uniform weights.')
         loss_function = nn.CrossEntropyLoss()
     else:
         raise NotImplementedError(args.lossf)

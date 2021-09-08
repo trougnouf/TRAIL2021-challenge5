@@ -4,6 +4,8 @@ import os
 import sys
 import torch
 import torchvision
+from pl_bolts.models.self_supervised import SwAV, SimCLR, SimSiam
+
 
 DS_ROOT = os.path.join(
     "..", "datasets"
@@ -47,6 +49,45 @@ def add_common_arguments(parser):
         "--device",
         help="Device number used if cuda is detected",
     )
+    parser.add_argument(
+        "--model_pretrain_method",
+        help="Which model to train, try Swav, SimCLR or SimSiam",
+    )
+
+
+def init_model(model_pretrain_method, pretrain_url, device):
+    if model_pretrain_method == "Swav":
+        model = SwAV.load_from_checkpoint(pretrain_url, strict=True).model
+        model.prototypes = torch.nn.Linear(128, NUM_CLASSES)
+    elif model_pretrain_method == "SimCLR":
+        try:
+            model = SimCLR.load_from_checkpoint(pretrain_url, strict=False).encoder
+        except FileNotFoundError as e:
+            print(
+                f'error: unable to load model. hint: have you run "bash tools/download_pretrained_models.sh"? ({e})'
+            )
+            exit(-1)
+        model.fc = torch.nn.Linear(
+            in_features=2048, out_features=NUM_CLASSES, bias=True
+        )
+    elif model_pretrain_method == "SimSiam":
+        try:
+            model = SimSiam.load_from_checkpoint(
+                pretrain_url, strict=True
+            ).online_network
+        except FileNotFoundError as e:
+            print(
+                f'error: unable to load model. hint: have you run "bash tools/download_pretrained_models.sh"? ({e})'
+            )
+            exit(-1)
+        model = model.encoder
+        model.fc = torch.nn.Linear(
+            in_features=2048, out_features=NUM_CLASSES, bias=True
+        )
+    else:
+        raise NotImplementedError(model_pretrain_method)
+    model = model.to(device)
+    return model
 
 
 def get_dataloaders(

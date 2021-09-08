@@ -1,5 +1,5 @@
 """Train loop for RAF model with PyTorch Lightning."""
-​
+
 import os
 import random
 import sys
@@ -9,15 +9,14 @@ import configargparse
 import torch
 from torch import nn
 import numpy as np
-from pl_bolts.models.self_supervised import SwAV
-​
+
 sys.path.append("..")
 from emotions import pt_common
-​
+
 CONFIG_FPATH = os.path.join("configs", "defaults.yaml")
 random.seed(42)
-​
-​
+
+
 def parse_arguments():
     """Parse config, return args."""
     parser = configargparse.ArgumentParser(
@@ -56,9 +55,17 @@ def parse_arguments():
         type=float,
         help="(space-separated) Classes weights used in the training loss. Set to 0 for uniform weights.",
     )
+    parser.add_argument(
+        "--pretrained_dataset",
+        help="Which dataset the SSL model has been trained on, try ImageNet or FFHQ",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+    )
     return parser.parse_args()
-​
-​
+
+
 def weights_init(m):
     """Weights initializer used when --no_pretrain is set."""
     if isinstance(m, nn.Conv2d):
@@ -66,8 +73,8 @@ def weights_init(m):
     if isinstance(m, nn.Linear):
         torch.nn.init.xavier_uniform(m.weight)
         m.bias.data.fill_(0.01)
-​
-​
+
+
 def train(
     dataset,
     model,
@@ -79,6 +86,7 @@ def train(
     save_dpath,
     patience,
     lr_decay,
+    model_pretrain_method,
 ):
     """Training loop."""
     print("Started training")
@@ -98,16 +106,16 @@ def train(
             inputs, labels = data
             inputs = inputs.to(device)
             labels = labels.to(device)
-​
+
             # forward + backward + optimize
             optimizer.zero_grad()
-            outputs = model(inputs)[1]
+            outputs = model(inputs)[1 if model_pretrain_method == "Swav" else 0]
             loss = loss_function(outputs, labels)
             loss.backward()
             optimizer.step()
-​
+
             evaluation.append((outputs.argmax(1) == labels).cpu().sum().item())
-​
+
             # print statistics
             running_loss += loss.item()
             if i % 10 == 9:
@@ -124,25 +132,25 @@ def train(
                 )
                 evaluation = []
                 running_loss = 0.0
-​
+
         validation_loss = 0.0
         evaluation = []
         running_loss = 0.0
-​
+
         num_correct = 0
         num_items = 0
         for _, data in enumerate(val_dataset):
             inputs, labels = data
             inputs = inputs.to(device)
             labels = labels.to(device)
-​
+
             # forward
-            outputs = model(inputs)[1]
+            outputs = model(inputs)[1 if model_pretrain_method == "Swav" else 0]
             loss = loss_function(outputs, labels)
             validation_loss += loss.item()
             num_correct += (outputs.argmax(1) == labels).sum().cpu().item()
             num_items += len(outputs)
-​
+
         validation_loss = validation_loss / len(val_dataset)
         accuracy = num_correct / num_items
         torch.save(
@@ -157,8 +165,8 @@ def train(
     writer.flush()
     writer.close()
     print("Finished Training")
-​
-​
+
+
 if __name__ == "__main__":
     args = parse_arguments()
     if not args.expname:
@@ -167,24 +175,26 @@ if __name__ == "__main__":
     os.makedirs(save_dpath, exist_ok=True)
     with open(os.path.join(save_dpath, "config.yaml"), "w") as fp:
         yaml.dump(vars(args), fp)
-​
+
     train_set, test_set = pt_common.get_dataloaders(
-        args.train_ds_names, args.test_ds_names
+        args.train_ds_names, args.test_ds_names, batch_size=args.batch_size
     )
     device = torch.device(f"cuda:{args.device}" if torch.cuda.is_available() else "cpu")
-    model = SwAV.load_from_checkpoint(args.pretrain_url, strict=True).model
-    model.prototypes = nn.Linear(128, pt_common.NUM_CLASSES)
-    model = model.to(device)
-​
+    model = pt_common.init_model(args.model_pretrain_method, args.pretrain_url, device)
+
     if args.no_pretrain:
         print("Reseting weights.")
         model.apply(weights_init)
-    if (args.lossf == "CrossEntropy" and len(args.loss_weights) == pt_commons.NUM_CLASSES):
+    if (
+        args.lossf == "CrossEntropy"
+        and args.loss_weights
+        and len(args.loss_weights) == pt_commons.NUM_CLASSES
+    ):
         loss_function = nn.CrossEntropyLoss(
             weight=torch.tensor(args.loss_weights).to(device)
         )
     elif args.lossf == "CrossEntropy":
-        print('pt_train: using CrossEntropyLoss with uniform weights.')
+        print("pt_train: using CrossEntropyLoss with uniform weights.")
         loss_function = nn.CrossEntropyLoss()
     else:
         raise NotImplementedError(args.lossf)
@@ -200,4 +210,5 @@ if __name__ == "__main__":
         save_dpath=save_dpath,
         patience=args.patience,
         lr_decay=args.lr_decay,
+        model_pretrain_method=args.model_pretrain_method,
     )

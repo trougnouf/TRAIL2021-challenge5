@@ -1,0 +1,3 @@
+pretrain_url: "https://pl-bolts-weights.s3.us-east-2.amazonaws.com/swav/swav_imagenet/swav_imagenet.pth.tar"
+model_pretrain_method: Swav
+batch_size: 32

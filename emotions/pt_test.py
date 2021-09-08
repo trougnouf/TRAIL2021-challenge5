@@ -11,7 +11,6 @@ import torch
 from torch import nn
 import torchvision
 import numpy as np
-from pl_bolts.models.self_supervised import SwAV
 
 sys.path.append("..")
 from emotions import pt_common
@@ -32,7 +31,7 @@ def parse_arguments():
 
 
 # test(dataset=test_set, model=model, device=device, res=res)
-def test(dataset, model, device, res):
+def test(dataset, model, device, res, model_pretrain_method):
     """Test images, return results per class and overall."""
     print("Started testing")
 
@@ -45,7 +44,7 @@ def test(dataset, model, device, res):
         label = label.to(device)
         input = torch.cat((input, input))  # *
         label = torch.cat((label, label))  # *
-        output = model(input)[1][0]
+        output = model(input)[1 if model_pretrain_method == "Swav" else 0][0]
         output = output.argmax().item()  # *
         label = label[0].item()
         print(f"{label=}, {output=}")
@@ -64,9 +63,7 @@ if __name__ == "__main__":
 
     _, test_set = pt_common.get_dataloaders([], args.test_ds_names, batch_size=1)
     device = torch.device(f"cuda:{args.device}" if torch.cuda.is_available() else "cpu")
-    model = SwAV.load_from_checkpoint(args.pretrain_url, strict=True).model
-    model.prototypes = nn.Linear(128, pt_common.NUM_CLASSES)
-    model = model.to(device)
+    model = pt_common.init_model(args.model_pretrain_method, args.pretrain_url, device)
     pretrained_weights = torch.load(args.pretrain_fpath, map_location=device)
     model_weights = model.state_dict()
     model_weights.update(pretrained_weights)
@@ -77,7 +74,13 @@ if __name__ == "__main__":
             res = yaml.safe_load(fp)
     else:
         res = dict()
-    test(dataset=test_set, model=model, device=device, res=res)
+    test(
+        dataset=test_set,
+        model=model,
+        device=device,
+        res=res,
+        model_pretrain_method=args.model_pretrain_method,
+    )
     print(res)
     with open(save_fpath, "w") as f:
         yaml.dump(res, f)

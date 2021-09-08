@@ -1,0 +1,3 @@
+pretrain_url: '../models/pretrained/emotions/SiamSiam_NaturalFaces_e80.ckpt'
+model_pretrain_method: SimSiam
+batch_size: 16

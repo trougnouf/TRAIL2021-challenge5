@@ -1,4 +1,0 @@
-test_ds_names:
-  - wikimedia_commons_emotions
-device: 0
-pretrain_url: "https://pl-bolts-weights.s3.us-east-2.amazonaws.com/swav/swav_imagenet/swav_imagenet.pth.tar"

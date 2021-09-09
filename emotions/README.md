@@ -43,14 +43,14 @@ You need to run `bash tools/download_pretrained_models.sh` before running a SimC
 
 - train on raf w/ balanced loss, pretrain with swav-ImageNet
   - raf test accuracy: .855 (1h52 out of 3h36)
-  - ../models/emotions/2021-09-07T17:28:13/resnet50_swav_103.pth
+  - ../models/emotions/Swav-ImageNet-rafonly-balanced/resnet50_swav_103.pth
   - wikimedia_commons_emotions: {0: 0.9166666666666666, 1: 0.08333333333333333, 2: 0.25, 3: 0.4166666666666667, 4: 0.6666666666666666, 5: 0.5, 6: 0.4166666666666667, 'global': 0.4642857142857143}
   - kdef: {0: 0.46131805157593125, 1: 0.008571428571428572, 2: 0.002857142857142857, 3: 0.07285714285714286, 4: 0.33476394849785407, 5: 0.025714285714285714, 6: 0.7314285714285714, 'global': 0.23381662242189094}
 
 
 - train with raf and kdef, pretrain with swav-ImageNet
   - raf test accuracy: 0.8435 after 80 minutes (out of 180 minutes)
-  - ../models/emotions/2021-09-06T18:36:17/resnet50_swav_42.pth
+  - ../models/emotions/Swav-ImageNet/resnet50_swav_42.pth
     - wikimedia_commons_emotions: {0: 0.6666666666666666, 1: 0.4166666666666667, 2: 0.25, 3: 0.5, 4: 0.5, 5: 0.5, 6: 0.08333333333333333, 'global': 0.4166666666666667}
 
 - train on raf and kdef, pretrain with SimSiam-FFHQ
@@ -58,22 +58,23 @@ You need to run `bash tools/download_pretrained_models.sh` before running a SimC
   - ../models/SimSiam_FFHQ/resnet50_swav_91.pth
   - wikimedia_commons_emotions: {0: 0.75, 1: 0.5833333333333334, 2: 0.16666666666666666, 3: 0.5, 4: 0.16666666666666666, 5: 0.5833333333333334, 6: 0.08333333333333333, 'global': 0.40476190476190477}
 
+
 - train with raf, pretrain with swav-ImageNet
   - raf test accuracy: .8563 after 126 minutes (out of 140 minutes)
-  - ../models/emotions/2021-09-06T15:50:10/resnet50_swav_116.pth
+  - ../models/emotions/Swav-ImageNet-rafonly/resnet50_swav_116.pth
     - wikimedia_commons_emotions: {0: 0.9166666666666666, 1: 0.08333333333333333, 2: 0.08333333333333333, 3: 0.5833333333333334, 4: 0.4166666666666667, 5: 0.3333333333333333, 6: 0.4166666666666667, 'global': 0.40476190476190477}
     - kdef: {0: 0.4154727793696275, 1: 0.0, 2: 0.04428571428571428, 3: 0.08571428571428572, 4: 0.5350500715307582, 5: 0.007142857142857143, 6: 0.5214285714285715, 'global': 0.2297324892791505}
 
 
 - train with raf and kdef from scratch
   - raf test accuracy: .7197 @ 89 (out of 2h40)
-  - ../models/emotions/2021-09-07T10:40:44/resnet50_swav_47.pth
+  - ../models/emotions/fromscratch/resnet50_swav_47.pth
     - wikimedia_commons_emotions: {0: 0.25, 1: 0.3333333333333333, 2: 0.08333333333333333, 3: 0.08333333333333333, 4: 0.3333333333333333, 5: 0.3333333333333333, 6: 0.08333333333333333, 'global': 0.21428571428571427}
 
 
 - train on raf from scratch
   - raf test accuracy: .3862 after 0 epochs out of 3h36 (model reaches 100% train accuracy but test goes down)
-  - ../models/emotions/2021-09-07-rafbasic_nopretrain/resnet50_swav_0.pth
+  - ../models/emotions/fromscratch-rafonly/resnet50_swav_0.pth
   - wikimedia_commons_emotions: {0: 0.0, 1: 0.0, 2: 0.0, 3: 1.0, 4: 0.0, 5: 0.0, 6: 0.0, 'global': 0.14285714285714285}
   - kdef: {0: 0.0, 1: 0.0, 2: 0.0, 3: 1.0, 4: 0.0, 5: 0.0, 6: 0.0, 'global': 0.14294465999591588}
 

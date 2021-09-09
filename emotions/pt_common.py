@@ -95,6 +95,17 @@ def init_model(model_pretrain_method, pretrain_url, device):
     return model
 
 
+def fw(model, input, model_pretrain_method):
+    """Call and index forward according to model type."""
+    output = model(input)
+    if model_pretrain_method == "torchvision":
+        return output
+    elif model_pretrain_method == "Swav":
+        return output[1]
+    else:
+        return output[0]
+
+
 def get_dataloaders(
     train_ds_names: list,
     test_ds_names: list,

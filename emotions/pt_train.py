@@ -109,7 +109,7 @@ def train(
 
             # forward + backward + optimize
             optimizer.zero_grad()
-            outputs = model(inputs)[1 if model_pretrain_method == "Swav" else 0]
+            outputs = pt_common.fw(model, inputs, model_pretrain_method)
             loss = loss_function(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -145,7 +145,7 @@ def train(
             labels = labels.to(device)
 
             # forward
-            outputs = model(inputs)[1 if model_pretrain_method == "Swav" else 0]
+            outputs = pt_common.fw(model, inputs, model_pretrain_method)
             loss = loss_function(outputs, labels)
             validation_loss += loss.item()
             num_correct += (outputs.argmax(1) == labels).sum().cpu().item()

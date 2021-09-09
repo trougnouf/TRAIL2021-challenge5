@@ -44,7 +44,7 @@ def test(dataset, model, device, res, model_pretrain_method):
         label = label.to(device)
         input = torch.cat((input, input))  # *
         label = torch.cat((label, label))  # *
-        output = model(input)[1 if model_pretrain_method == "Swav" else 0][0]
+        output = pt_common.fw(model, input, model_pretrain_method)[0]
         output = output.argmax().item()  # *
         label = label[0].item()
         print(f"{label=}, {output=}")

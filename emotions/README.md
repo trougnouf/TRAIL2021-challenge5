@@ -1,6 +1,11 @@
+# emotions
+
+ResNet-50 models were trained to classify seven basic human emotions from datasets of faces.
+The RAF basic dataset which consists of 15339 labeled face images was used to train all models. Some models were trained with KDEF as well while others left it available for testing.
+
 # Data
 
-raf_basic and kdef datasets are placed in ../datasets/train/[class]/[imagefiles] (and ../datasets/test/[class]/[imagefiles] for relevant raf_basic samples). A script will handle this if the data is found in ../datasets/KDEF_and_AKDEF and ~/.cache/torch/mmf/data/raf_basic/basic
+raf_basic and kdef datasets are placed in ../datasets/train/[class]/[imagefiles] (and ../datasets/test/[class]/[imagefiles] for relevant raf_basic samples). A script will automatically handle this if the data is found in ../datasets/KDEF_and_AKDEF and ~/.cache/torch/mmf/data/raf_basic/basic
 
 Classes are as follow:
 1. Surprise
@@ -16,7 +21,25 @@ The cropped test data in ../datasets/test/wikimedia_commons_emotions is free (ty
 # pip requirements:
 pip install lightning-bolts ConfigArgParse PyYAML torchvision
 
+# Training
+
+`python3 pt_train.py --config configs/train_[simclr_ffhq, simclr_imagenet, simsiam_ffhq, swav_imagenet, torchvision_imagenet, weigthed_classes].yaml`
+
+train_weighted_classes can be combined with other configuration, and yaml configuration files can be combined with command line arguments (which take priority).
+
+You need to run `bash tools/download_pretrained_models.sh` before running a SimCLR or SimSiam based model.
+
+# Testing
+
+`python3 pt_test.py --config configs/test[simclr, simsiam, swav, torchvision].yaml --pretrain_fpath [path to trained model]`
+
 # Results:
+
+- train on raf and kdef, pretrain with SimCLR-FFHQ
+  - raf test accuracy: .8243 (2h58 out of 2h58)
+  - ../models/SimCLR_FFHQ/resnet50_swav_94.pth
+  - wikimedia_commons_emotions: {0: 0.9166666666666666, 1: 0.16666666666666666, 2: 0.3333333333333333, 3: 0.4166666666666667, 4: 0.5, 5: 0.8333333333333334, 6: 0.16666666666666666, 'global': 0.47619047619047616}
+
 
 - train on raf w/ balanced loss, pretrain with swav-ImageNet
   - raf test accuracy: .855 (1h52 out of 3h36)
@@ -30,6 +53,10 @@ pip install lightning-bolts ConfigArgParse PyYAML torchvision
   - ../models/emotions/2021-09-06T18:36:17/resnet50_swav_42.pth
     - wikimedia_commons_emotions: {0: 0.6666666666666666, 1: 0.4166666666666667, 2: 0.25, 3: 0.5, 4: 0.5, 5: 0.5, 6: 0.08333333333333333, 'global': 0.4166666666666667}
 
+- train on raf and kdef, pretrain with SimSiam-FFHQ
+  - raf test accuracy: .8044 (2h52 out of 2h57)
+  - ../models/SimSiam_FFHQ/resnet50_swav_91.pth
+  - wikimedia_commons_emotions: {0: 0.75, 1: 0.5833333333333334, 2: 0.16666666666666666, 3: 0.5, 4: 0.16666666666666666, 5: 0.5833333333333334, 6: 0.08333333333333333, 'global': 0.40476190476190477}
 
 - train with raf, pretrain with swav-ImageNet
   - raf test accuracy: .8563 after 126 minutes (out of 140 minutes)
@@ -58,8 +85,5 @@ pip install lightning-bolts ConfigArgParse PyYAML torchvision
       - wikimedia_commons_emotions: {0: 0.3333333333333333, 1: 0.9166666666666666, 2: 0.3333333333333333, 3: 0.0, 4: 0.25, 5: 0.5, 6: 0.0, 'global': 0.3333333333333333}
 
 **TODO**:
-- train w/ balanced weights on raf+kdef
-- train w/ simclr weakly pretrained on faces (raf+kdef, raf)
 - train w/ simclr weakly pretrained on imagenet (raf+kdef, raf)
 - train w/ siamsiam weakly pretrained on imagenet (raf+kdef, raf)
-- train w/ siamsiam weakly pretrained on faces (raf+kdef, raf)

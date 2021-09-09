@@ -1,4 +1,1 @@
-from .utils import StochasticDepth, stochastic_depth
-from .loading import load
-
-
+from .loading import load, add_classifier

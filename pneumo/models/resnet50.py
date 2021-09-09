@@ -4,7 +4,6 @@ import torchvision
 import torchmetrics
 import pytorch_lightning as pl
 import torch.nn.functional as F
-import numpy as np
 
 
 class ResNet50Lightning(pl.LightningModule):

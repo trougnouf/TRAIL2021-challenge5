@@ -10,7 +10,7 @@ import os
 def load(dataset_name, batch_size, data_augmentation=False):
     if dataset_name == "pneumonia":
         return _from_image_folder(
-            root="~/.cache/torch/mmf/data/pneumonia/train",
+            root="~/.cache/torch/mmf/data/pneumonia",
             batch_size=batch_size,
             transform=Compose([
                 Resize(256),
@@ -33,12 +33,12 @@ def load(dataset_name, batch_size, data_augmentation=False):
             ])
         )
     elif dataset_name == "chexpert":
-        return _load_chexpert(batch_size)
+        return _load_chexpert_ssl(batch_size)
     else:
         raise Exception(f"Unknown dataset: {dataset_name}")
 
 
-def _load_chexpert(batch_size):
+def _load_chexpert_ssl(batch_size):
     dataset = ImageFolder("~/.cache/torch/mmf/data/chexpert/train",
                           transform=SimCLRTrainDataTransform(input_height=224))
     num_samples = len(dataset)
@@ -69,20 +69,6 @@ def _from_image_folder(root, batch_size, transform):
         root=os.path.join(root, "val"),
         transform=transform
     )
-    # val_set = ImageFolder(
-    #     root="~/.cache/torch/mmf/data/pneumonia/val",
-    #     transform=Compose([
-    #         Resize(256),
-    #         CenterCrop(224),
-    #         Augmenter(ra=False, prob=0.5),
-    #         ToTensor(),
-    #         Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    #     ])
-    # )
-    #train = DataLoader(train_set, batch_size=64, shuffle=True, num_workers=6)
-    #test = DataLoader(test_set, batch_size=64, shuffle=True, num_workers=6)
-    # val = DataLoader(val_set, batch_size=batch_size, shuffle=True)
-
     train = DataLoader(train_set, batch_size=batch_size, shuffle=True)
     test = DataLoader(test_set, batch_size=batch_size, shuffle=True)
     val = DataLoader(val_set, batch_size=batch_size, shuffle=True)

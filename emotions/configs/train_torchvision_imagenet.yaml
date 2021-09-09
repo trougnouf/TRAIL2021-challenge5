@@ -1,0 +1,2 @@
+model_pretrain_method: torchvision
+batch_size: 32

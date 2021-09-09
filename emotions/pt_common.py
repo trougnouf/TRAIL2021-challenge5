@@ -84,6 +84,11 @@ def init_model(model_pretrain_method, pretrain_url, device):
         model.fc = torch.nn.Linear(
             in_features=2048, out_features=NUM_CLASSES, bias=True
         )
+    elif model_pretrain_method == "torchvision":
+        model = torchvision.models.resnet50(pretrained=True)
+        model.fc = torch.nn.Linear(
+            in_features=2048, out_features=NUM_CLASSES, bias=True
+        )
     else:
         raise NotImplementedError(model_pretrain_method)
     model = model.to(device)

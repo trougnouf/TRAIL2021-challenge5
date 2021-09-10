@@ -12,7 +12,7 @@ ORIG_DATA_DPATH = os.path.join(pt_common.DS_ROOT, "KDEF_and_AKDEF", "KDEF")
 DS_NAME = "kdef"
 LABELS_LUT = {"AF": 2, "AN": 6, "DI": 3, "HA": 4, "NE": 7, "SA": 5, "SU": 1}
 
-#assert os.path.isdir(ORIG_DATA_DPATH), ORIG_DATA_DPATH
+# assert os.path.isdir(ORIG_DATA_DPATH), ORIG_DATA_DPATH
 
 
 def make_KDEF_ImageFolder_struct():
